@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestor de Proyectos y Tareas</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Gestor de Proyectos y Tareas</h1>
+      <div class="header-actions">
+        <div class="search-container">
+          <input type="text" id="searchInput" placeholder="Buscar tareas...">
+          <button id="searchBtn" class="btn">Buscar</button>
+        </div>
+        <button id="newProjectBtn" class="btn primary">Nuevo Proyecto</button>
+        <button id="exportBtn" class="btn">Exportar</button>
+        <button id="importBtn" class="btn">Importar</button>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <div class="sidebar">
+        <h2>Proyectos</h2>
+        <ul id="projectsList" class="projects-list"></ul>
+        <div class="upcoming-tasks">
+          <h3>Tareas próximas</h3>
+          <div id="upcomingTasksList" class="upcoming-tasks-list"></div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div id="projectView" class="project-view">
+          <div id="projectDetails" class="project-details">
+            <h2 id="projectTitle">Selecciona un proyecto</h2>
+            <p id="projectDescription" class="project-description"></p>
+            <div id="projectActions" class="project-actions" style="display: none;">
+              <button id="addTaskBtn" class="btn">Nueva Tarea</button>
+              <button id="editProjectBtn" class="btn">Editar Proyecto</button>
+              <button id="deleteProjectBtn" class="btn danger">Eliminar Proyecto</button>
+            </div>
+          </div>
+
+          <div id="taskStats" class="task-stats" style="display: none;">
+            <div class="stat-item">
+              <span class="stat-label">Total de tareas:</span>
+              <span id="totalTasks" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Completadas:</span>
+              <span id="completedTasksCount" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Progreso:</span>
+              <div class="progress-bar">
+                <div id="progressBar" class="progress" style="width: 0%;">0%</div>
+              </div>
+            </div>
+          </div>
+
+          <div id="tasksList" class="tasks-list">
+            <div class="tasks-column">
+              <h3>Pendientes</h3>
+              <div id="pendingTasks" class="tasks-container" data-status="pendiente"></div>
+            </div>
+            <div class="tasks-column">
+              <h3>En Progreso</h3>
+              <div id="inProgressTasks" class="tasks-container" data-status="en-progreso"></div>
+            </div>
+            <div class="tasks-column">
+              <h3>Completadas</h3>
+              <div id="completedTasks" class="tasks-container" data-status="completada"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div id="searchResults" class="search-results" style="display: none;">
+          <div class="search-header">
+            <h2>Resultados de búsqueda</h2>
+            <button id="closeSearchBtn" class="btn">Volver a proyectos</button>
+          </div>
+          <div id="searchResultsList" class="search-results-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para crear/editar proyectos -->
+  <div id="projectModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2 id="projectModalTitle">Nuevo Proyecto</h2>
+      <form id="projectForm">
+        <div class="form-group">
+          <label for="projectName">Nombre del Proyecto</label>
+          <input type="text" id="projectName" required>
+        </div>
+        <div class="form-group">
+          <label for="projectDesc">Descripción</label>
+          <textarea id="projectDesc" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn primary">Guardar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal para crear/editar tareas -->
+  <div id="taskModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2 id="taskModalTitle">Nueva Tarea</h2>
+      <form id="taskForm">
+        <div class="form-group">
+          <label for="taskTitle">Título</label>
+          <input type="text" id="taskTitle" required>
+        </div>
+        <div class="form-group">
+          <label for="taskDesc">Descripción</label>
+          <textarea id="taskDesc" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="taskAssignee">Responsable</label>
+          <input type="text" id="taskAssignee">
+        </div>
+        <div class="form-group">
+          <label for="taskDueDate">Fecha límite</label>
+          <input type="date" id="taskDueDate">
+        </div>
+        <div class="form-group">
+          <label for="taskStatus">Estado</label>
+          <select id="taskStatus">
+            <option value="pendiente">Pendiente</option>
+            <option value="en-progreso">En Progreso</option>
+            <option value="completada">Completada</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="taskPriority">Prioridad</label>
+          <select id="taskPriority">
+            <option value="baja">Baja</option>
+            <option value="media">Media</option>
+            <option value="alta">Alta</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="taskTags">Etiquetas (separadas por comas)</label>
+          <input type="text" id="taskTags">
+        </div>
+        <button type="submit" class="btn primary">Guardar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal para importar datos -->
+  <div id="importModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Importar Datos</h2>
+      <div class="form-group">
+        <label for="importData">Pega los datos JSON aquí:</label>
+        <textarea id="importData" rows="10"></textarea>
+      </div>
+      <button id="confirmImportBtn" class="btn primary">Importar</button>
+    </div>
+  </div>
+
+
+  <!-- Modal para crear/editar subtareas -->
+  <div id="subtaskModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2 id="subtaskModalTitle">Nueva Subtarea</h2>
+      <form id="subtaskForm">
+        <div class="form-group">
+          <label for="subtaskTitle">Título</label>
+          <input type="text" id="subtaskTitle" required>
+        </div>
+        <div class="form-group">
+          <label for="subtaskCompleted">Estado</label>
+          <select id="subtaskCompleted">
+            <option value="false">Pendiente</option>
+            <option value="true">Completada</option>
+          </select>
+        </div>
+        <button type="submit" class="btn primary">Guardar</button>
+      </form>
+    </div>
+  </div>
+  
+  <script src="renderer.js"></script>
+</body>
+</html>

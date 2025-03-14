@@ -1,0 +1,37 @@
+{
+    "name": "project-task-manager",
+    "version": "1.0.0",
+    "description": "Aplicación de gestión de proyectos y tareas",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "build": "electron-builder"
+    },
+    "author": "Carlos Mur",
+    "license": "MIT",
+    "devDependencies": {
+        "electron": "^28.3.3",
+        "electron-builder": "^25.1.8"
+    },
+    "dependencies": {
+        "electron-store": "^8.2.0"
+    },
+    "build": {
+        "appId": "com.cmur.gestorproyectos",
+        "productName": "Gestor de Proyectos",
+        "directories": {
+            "output": "release"
+        },
+        "mac": {
+            "category": "public.app-category.developer-tools",
+            "icon": "assets/icon.icns"
+          },
+          "win": {
+            "icon": "assets/icon.ico"
+          },
+          "linux": {
+            "icon": "assets/icon.png",
+            "category": "Development"
+          }
+    }
+}
