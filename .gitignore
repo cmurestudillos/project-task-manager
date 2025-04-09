@@ -1,9 +1,8 @@
 node_modules
 package-lock.json
-
-release
 dist
 coverage
-.vscode
-.idea
+release
 *.log
+.idea
+.DS_Store

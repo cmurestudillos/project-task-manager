@@ -6,17 +6,17 @@ let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 1800,
+    height: 1169,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
-    }
+      preload: path.join(__dirname, 'preload.js'),
+    },
   });
 
   mainWindow.loadFile('index.html');
-  
+
   // Abre DevTools en desarrollo para depuración
   // mainWindow.webContents.openDevTools();
 }
@@ -108,11 +108,11 @@ ipcMain.handle('delete-subtask', async (event, { projectId, taskId, subtaskId })
 // Función para verificar tareas por vencer
 function checkDueTasks() {
   const upcomingTasks = db.getUpcomingTasks(1); // Tareas que vencen en 1 día
-  
+
   upcomingTasks.forEach(task => {
     new Notification({
       title: '¡Tarea por vencer!',
-      body: `La tarea "${task.taskTitle}" del proyecto "${task.projectName}" vence mañana.`
+      body: `La tarea "${task.taskTitle}" del proyecto "${task.projectName}" vence mañana.`,
     }).show();
   });
 }

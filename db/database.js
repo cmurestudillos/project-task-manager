@@ -42,16 +42,16 @@ class Database {
    */
   addProject(project) {
     const projects = this.getProjects();
-    
+
     // Generar ID único basado en timestamp
     project.id = Date.now().toString();
     project.tasks = [];
     project.createdAt = new Date().toISOString();
-    
+
     // Añadir el proyecto y guardar
     projects.push(project);
     store.set('projects', projects);
-    
+
     return project;
   }
 
@@ -63,19 +63,19 @@ class Database {
   updateProject(updatedProject) {
     const projects = this.getProjects();
     const index = projects.findIndex(p => p.id === updatedProject.id);
-    
+
     if (index !== -1) {
       // Preservar las tareas y otros campos que no se actualizan
-      projects[index] = { 
-        ...projects[index], 
+      projects[index] = {
+        ...projects[index],
         ...updatedProject,
-        updatedAt: new Date().toISOString() 
+        updatedAt: new Date().toISOString(),
       };
-      
+
       store.set('projects', projects);
       return projects[index];
     }
-    
+
     return null;
   }
 
@@ -87,12 +87,12 @@ class Database {
   deleteProject(projectId) {
     const projects = this.getProjects();
     const newProjects = projects.filter(p => p.id !== projectId);
-    
+
     if (newProjects.length < projects.length) {
       store.set('projects', newProjects);
       return true;
     }
-    
+
     return false;
   }
 
@@ -105,25 +105,25 @@ class Database {
   addTask(projectId, task) {
     const projects = this.getProjects();
     const projectIndex = projects.findIndex(p => p.id === projectId);
-    
+
     if (projectIndex !== -1) {
       // Generar ID único y añadir metadatos
       task.id = Date.now().toString();
       task.status = task.status || 'pendiente';
       task.createdAt = new Date().toISOString();
-      
+
       // Inicializar el array de tareas si no existe
       if (!projects[projectIndex].tasks) {
         projects[projectIndex].tasks = [];
       }
-      
+
       // Añadir la tarea y guardar
       projects[projectIndex].tasks.push(task);
       store.set('projects', projects);
-      
+
       return task;
     }
-    
+
     return null;
   }
 
@@ -137,23 +137,23 @@ class Database {
   updateTask(projectId, taskId, updatedTask) {
     const projects = this.getProjects();
     const projectIndex = projects.findIndex(p => p.id === projectId);
-    
+
     if (projectIndex !== -1) {
       const taskIndex = projects[projectIndex].tasks.findIndex(t => t.id === taskId);
-      
+
       if (taskIndex !== -1) {
         // Actualizar la tarea manteniendo los campos existentes que no se actualizan
-        projects[projectIndex].tasks[taskIndex] = { 
-          ...projects[projectIndex].tasks[taskIndex], 
+        projects[projectIndex].tasks[taskIndex] = {
+          ...projects[projectIndex].tasks[taskIndex],
           ...updatedTask,
-          updatedAt: new Date().toISOString() 
+          updatedAt: new Date().toISOString(),
         };
-        
+
         store.set('projects', projects);
         return projects[projectIndex].tasks[taskIndex];
       }
     }
-    
+
     return null;
   }
 
@@ -166,17 +166,17 @@ class Database {
   deleteTask(projectId, taskId) {
     const projects = this.getProjects();
     const projectIndex = projects.findIndex(p => p.id === projectId);
-    
+
     if (projectIndex !== -1) {
       const initialTaskCount = projects[projectIndex].tasks.length;
       projects[projectIndex].tasks = projects[projectIndex].tasks.filter(t => t.id !== taskId);
-      
+
       if (projects[projectIndex].tasks.length < initialTaskCount) {
         store.set('projects', projects);
         return true;
       }
     }
-    
+
     return false;
   }
 
@@ -187,22 +187,22 @@ class Database {
    */
   getProjectStats(projectId) {
     const project = this.getProjectById(projectId);
-    
+
     if (project && project.tasks) {
       const total = project.tasks.length;
       const completed = project.tasks.filter(t => t.status === 'completada').length;
       const inProgress = project.tasks.filter(t => t.status === 'en-progreso').length;
       const pending = project.tasks.filter(t => t.status === 'pendiente').length;
-      
+
       return {
         total,
         completed,
         inProgress,
         pending,
-        completionPercentage: total ? Math.round((completed / total) * 100) : 0
+        completionPercentage: total ? Math.round((completed / total) * 100) : 0,
       };
     }
-    
+
     return null;
   }
 
@@ -215,14 +215,14 @@ class Database {
     const projects = this.getProjects();
     const today = new Date();
     const upcomingTasks = [];
-    
+
     projects.forEach(project => {
       if (project.tasks) {
         project.tasks.forEach(task => {
           if (task.dueDate && task.status !== 'completada') {
             const dueDate = new Date(task.dueDate);
             const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
-            
+
             if (diffDays >= 0 && diffDays <= daysThreshold) {
               upcomingTasks.push({
                 projectId: project.id,
@@ -230,14 +230,14 @@ class Database {
                 taskId: task.id,
                 taskTitle: task.title,
                 dueDate: task.dueDate,
-                daysLeft: diffDays
+                daysLeft: diffDays,
               });
             }
           }
         });
       }
     });
-    
+
     return upcomingTasks;
   }
 
@@ -248,11 +248,11 @@ class Database {
    */
   searchTasks(searchTerm) {
     if (!searchTerm) return [];
-    
+
     const projects = this.getProjects();
     const searchResults = [];
     const term = searchTerm.toLowerCase();
-    
+
     projects.forEach(project => {
       if (project.tasks) {
         project.tasks.forEach(task => {
@@ -264,13 +264,13 @@ class Database {
             searchResults.push({
               projectId: project.id,
               projectName: project.name,
-              task: { ...task }
+              task: { ...task },
             });
           }
         });
       }
     });
-    
+
     return searchResults;
   }
 
@@ -290,7 +290,7 @@ class Database {
   importData(data) {
     try {
       let projects;
-      
+
       if (typeof data === 'string') {
         projects = JSON.parse(data);
       } else if (Array.isArray(data)) {
@@ -298,7 +298,7 @@ class Database {
       } else {
         return false;
       }
-      
+
       store.set('projects', projects);
       return true;
     } catch (error) {
@@ -308,106 +308,106 @@ class Database {
   }
 
   /**
- * Añade una subtarea a una tarea
- * @param {string} projectId - ID del proyecto
- * @param {string} taskId - ID de la tarea
- * @param {Object} subtask - Datos de la subtarea a añadir
- * @returns {Object|null} Subtarea añadida o null si la tarea no existe
- */
-addSubtask(projectId, taskId, subtask) {
-  const projects = this.getProjects();
-  const projectIndex = projects.findIndex(p => p.id === projectId);
-  
-  if (projectIndex !== -1) {
-    const taskIndex = projects[projectIndex].tasks.findIndex(t => t.id === taskId);
-    
-    if (taskIndex !== -1) {
-      // Inicializar el array de subtareas si no existe
-      if (!projects[projectIndex].tasks[taskIndex].subtasks) {
-        projects[projectIndex].tasks[taskIndex].subtasks = [];
-      }
-      
-      // Generar ID único y añadir metadatos
-      subtask.id = Date.now().toString();
-      subtask.completed = subtask.completed || false;
-      subtask.createdAt = new Date().toISOString();
-      
-      // Añadir la subtarea y guardar
-      projects[projectIndex].tasks[taskIndex].subtasks.push(subtask);
-      store.set('projects', projects);
-      
-      return subtask;
-    }
-  }
-  
-  return null;
-}
+   * Añade una subtarea a una tarea
+   * @param {string} projectId - ID del proyecto
+   * @param {string} taskId - ID de la tarea
+   * @param {Object} subtask - Datos de la subtarea a añadir
+   * @returns {Object|null} Subtarea añadida o null si la tarea no existe
+   */
+  addSubtask(projectId, taskId, subtask) {
+    const projects = this.getProjects();
+    const projectIndex = projects.findIndex(p => p.id === projectId);
 
-/**
- * Actualiza una subtarea existente
- * @param {string} projectId - ID del proyecto
- * @param {string} taskId - ID de la tarea
- * @param {string} subtaskId - ID de la subtarea
- * @param {Object} updatedSubtask - Datos actualizados de la subtarea
- * @returns {Object|null} Subtarea actualizada o null si no se encuentra
- */
-updateSubtask(projectId, taskId, subtaskId, updatedSubtask) {
-  const projects = this.getProjects();
-  const projectIndex = projects.findIndex(p => p.id === projectId);
-  
-  if (projectIndex !== -1) {
-    const taskIndex = projects[projectIndex].tasks.findIndex(t => t.id === taskId);
-    
-    if (taskIndex !== -1 && projects[projectIndex].tasks[taskIndex].subtasks) {
-      const subtaskIndex = projects[projectIndex].tasks[taskIndex].subtasks.findIndex(s => s.id === subtaskId);
-      
-      if (subtaskIndex !== -1) {
-        // Actualizar subtarea manteniendo los campos existentes
-        projects[projectIndex].tasks[taskIndex].subtasks[subtaskIndex] = { 
-          ...projects[projectIndex].tasks[taskIndex].subtasks[subtaskIndex], 
-          ...updatedSubtask,
-          updatedAt: new Date().toISOString() 
-        };
-        
+    if (projectIndex !== -1) {
+      const taskIndex = projects[projectIndex].tasks.findIndex(t => t.id === taskId);
+
+      if (taskIndex !== -1) {
+        // Inicializar el array de subtareas si no existe
+        if (!projects[projectIndex].tasks[taskIndex].subtasks) {
+          projects[projectIndex].tasks[taskIndex].subtasks = [];
+        }
+
+        // Generar ID único y añadir metadatos
+        subtask.id = Date.now().toString();
+        subtask.completed = subtask.completed || false;
+        subtask.createdAt = new Date().toISOString();
+
+        // Añadir la subtarea y guardar
+        projects[projectIndex].tasks[taskIndex].subtasks.push(subtask);
         store.set('projects', projects);
-        return projects[projectIndex].tasks[taskIndex].subtasks[subtaskIndex];
+
+        return subtask;
       }
     }
-  }
-  
-  return null;
-}
 
-/**
- * Elimina una subtarea
- * @param {string} projectId - ID del proyecto
- * @param {string} taskId - ID de la tarea
- * @param {string} subtaskId - ID de la subtarea a eliminar
- * @returns {boolean} true si se eliminó, false si no se encontró
- */
-deleteSubtask(projectId, taskId, subtaskId) {
-  const projects = this.getProjects();
-  const projectIndex = projects.findIndex(p => p.id === projectId);
-  
-  if (projectIndex !== -1) {
-    const taskIndex = projects[projectIndex].tasks.findIndex(t => t.id === taskId);
-    
-    if (taskIndex !== -1 && projects[projectIndex].tasks[taskIndex].subtasks) {
-      const initialSubtaskCount = projects[projectIndex].tasks[taskIndex].subtasks.length;
-      projects[projectIndex].tasks[taskIndex].subtasks = projects[projectIndex].tasks[taskIndex].subtasks.filter(s => s.id !== subtaskId);
-      
-      if (projects[projectIndex].tasks[taskIndex].subtasks.length < initialSubtaskCount) {
-        store.set('projects', projects);
-        return true;
+    return null;
+  }
+
+  /**
+   * Actualiza una subtarea existente
+   * @param {string} projectId - ID del proyecto
+   * @param {string} taskId - ID de la tarea
+   * @param {string} subtaskId - ID de la subtarea
+   * @param {Object} updatedSubtask - Datos actualizados de la subtarea
+   * @returns {Object|null} Subtarea actualizada o null si no se encuentra
+   */
+  updateSubtask(projectId, taskId, subtaskId, updatedSubtask) {
+    const projects = this.getProjects();
+    const projectIndex = projects.findIndex(p => p.id === projectId);
+
+    if (projectIndex !== -1) {
+      const taskIndex = projects[projectIndex].tasks.findIndex(t => t.id === taskId);
+
+      if (taskIndex !== -1 && projects[projectIndex].tasks[taskIndex].subtasks) {
+        const subtaskIndex = projects[projectIndex].tasks[taskIndex].subtasks.findIndex(s => s.id === subtaskId);
+
+        if (subtaskIndex !== -1) {
+          // Actualizar subtarea manteniendo los campos existentes
+          projects[projectIndex].tasks[taskIndex].subtasks[subtaskIndex] = {
+            ...projects[projectIndex].tasks[taskIndex].subtasks[subtaskIndex],
+            ...updatedSubtask,
+            updatedAt: new Date().toISOString(),
+          };
+
+          store.set('projects', projects);
+          return projects[projectIndex].tasks[taskIndex].subtasks[subtaskIndex];
+        }
       }
     }
+
+    return null;
   }
-  
-  return false;
-}
-}
 
+  /**
+   * Elimina una subtarea
+   * @param {string} projectId - ID del proyecto
+   * @param {string} taskId - ID de la tarea
+   * @param {string} subtaskId - ID de la subtarea a eliminar
+   * @returns {boolean} true si se eliminó, false si no se encontró
+   */
+  deleteSubtask(projectId, taskId, subtaskId) {
+    const projects = this.getProjects();
+    const projectIndex = projects.findIndex(p => p.id === projectId);
 
+    if (projectIndex !== -1) {
+      const taskIndex = projects[projectIndex].tasks.findIndex(t => t.id === taskId);
+
+      if (taskIndex !== -1 && projects[projectIndex].tasks[taskIndex].subtasks) {
+        const initialSubtaskCount = projects[projectIndex].tasks[taskIndex].subtasks.length;
+        projects[projectIndex].tasks[taskIndex].subtasks = projects[projectIndex].tasks[taskIndex].subtasks.filter(
+          s => s.id !== subtaskId
+        );
+
+        if (projects[projectIndex].tasks[taskIndex].subtasks.length < initialSubtaskCount) {
+          store.set('projects', projects);
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+}
 
 // Exportamos una instancia única de Database
 module.exports = new Database();

@@ -1,37 +1,44 @@
 {
-    "name": "project-task-manager",
-    "version": "1.0.0",
-    "description": "Aplicación de gestión de proyectos y tareas",
-    "main": "main.js",
-    "scripts": {
-        "start": "electron .",
-        "build": "electron-builder"
+  "name": "project-task-manager",
+  "version": "1.0.0",
+  "description": "Aplicación de gestión de proyectos y tareas",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "package:mac": "electron-builder build --mac",
+    "package:win": "electron-builder build --windows",
+    "package:linux": "electron-builder build --linux"
+  },
+  "author": "Carlos Mur",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^25.1.8",
+    "eslint": "^9.22.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-jsdoc": "^50.6.8",
+    "eslint-plugin-prettier": "^5.2.3",
+    "prettier": "^3.5.3"
+  },
+  "dependencies": {
+    "electron-store": "^8.2.0"
+  },
+  "build": {
+    "appId": "com.cmur.gestorproyectos",
+    "productName": "Gestor de Proyectos",
+    "directories": {
+      "output": "release"
     },
-    "author": "Carlos Mur",
-    "license": "MIT",
-    "devDependencies": {
-        "electron": "^28.3.3",
-        "electron-builder": "^25.1.8"
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "assets/icon.icns"
     },
-    "dependencies": {
-        "electron-store": "^8.2.0"
+    "win": {
+      "icon": "assets/icon.ico"
     },
-    "build": {
-        "appId": "com.cmur.gestorproyectos",
-        "productName": "Gestor de Proyectos",
-        "directories": {
-            "output": "release"
-        },
-        "mac": {
-            "category": "public.app-category.developer-tools",
-            "icon": "assets/icon.icns"
-          },
-          "win": {
-            "icon": "assets/icon.ico"
-          },
-          "linux": {
-            "icon": "assets/icon.png",
-            "category": "Development"
-          }
+    "linux": {
+      "icon": "assets/icon.png",
+      "category": "Development"
     }
+  }
 }
