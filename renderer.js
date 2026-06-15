@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const pendingTasks = document.getElementById('pendingTasks');
   const inProgressTasks = document.getElementById('inProgressTasks');
   const completedTasks = document.getElementById('completedTasks');
+  const pendingCount = document.getElementById('pendingCount');
+  const inProgressCount = document.getElementById('inProgressCount');
+  const completedCount = document.getElementById('completedCount');
   const upcomingTasksList = document.getElementById('upcomingTasksList');
 
   // Elementos de búsqueda
@@ -36,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const exportBtn = document.getElementById('exportBtn');
   const importBtn = document.getElementById('importBtn');
   const confirmImportBtn = document.getElementById('confirmImportBtn');
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
 
   // Variables de estado
   let currentProjectId = null;
@@ -49,6 +53,20 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentSubtaskId = null;
   let isEditingSubtask = false;
   let parentTaskId = null;
+
+  // Tema claro/oscuro
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    localStorage.setItem('theme', theme);
+  }
+
+  applyTheme(localStorage.getItem('theme') || 'light');
+
+  themeToggleBtn.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  });
 
   // Cargar proyectos y tareas próximas al iniciar
   loadProjects();
@@ -108,6 +126,25 @@ document.addEventListener('DOMContentLoaded', () => {
     return div.innerHTML;
   }
 
+  const AVATAR_COLORS = ['#0052cc', '#36b37e', '#ff8b00', '#6554c0', '#00b8d9', '#de350b', '#00875a', '#5243aa'];
+
+  function getInitials(name) {
+    return name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map(part => part[0].toUpperCase())
+      .join('');
+  }
+
+  function getAvatarColor(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+  }
+
   async function loadProjects() {
     try {
       const projects = await window.api.getProjects();
@@ -123,8 +160,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const li = document.createElement('li');
       li.textContent = project.name;
       li.dataset.id = project.id;
+      if (project.id === currentProjectId) {
+        li.classList.add('active');
+      }
       li.addEventListener('click', () => selectProject(project.id));
       projectsList.appendChild(li);
+    });
+  }
+
+  function updateActiveProjectInSidebar() {
+    projectsList.querySelectorAll('li').forEach(li => {
+      li.classList.toggle('active', li.dataset.id === currentProjectId);
     });
   }
 
@@ -134,6 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (project) {
         currentProjectId = projectId;
+        updateActiveProjectInSidebar();
         projectTitle.textContent = project.name;
         projectDescription.textContent = project.description || '';
         projectActions.style.display = 'flex';
@@ -167,8 +214,11 @@ document.addEventListener('DOMContentLoaded', () => {
     inProgressTasks.innerHTML = '';
     completedTasks.innerHTML = '';
 
+    const counts = { pendiente: 0, 'en-progreso': 0, completada: 0 };
+
     tasks.forEach(task => {
       const taskElement = createTaskElement(task);
+      counts[task.status] = (counts[task.status] || 0) + 1;
 
       switch (task.status) {
         case 'pendiente':
@@ -183,13 +233,21 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    pendingCount.textContent = counts.pendiente;
+    inProgressCount.textContent = counts['en-progreso'];
+    completedCount.textContent = counts.completada;
+
     setupDragAndDrop();
   }
 
   function createTaskElement(task) {
     const div = document.createElement('div');
-    div.className = `task-card priority-${task.priority || 'media'}`;
+    div.className = 'task-card';
     div.dataset.id = task.id;
+
+    const priority = task.priority || 'media';
+    const priorityLabels = { alta: 'Alta', media: 'Media', baja: 'Baja' };
+    const priorityBadgeHtml = `<span class="priority-badge priority-${priority}">${priorityLabels[priority] || priority}</span>`;
 
     let tagsHtml = '';
     if (task.tags && task.tags.length > 0) {
@@ -198,6 +256,40 @@ document.addEventListener('DOMContentLoaded', () => {
           ${task.tags.map(tag => `<span class="task-tag">${escapeHtml(tag)}</span>`).join('')}
         </div>
       `;
+    }
+
+    let dueDateHtml = '';
+    if (task.dueDate) {
+      const dueDate = new Date(task.dueDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+
+      let dueClass = '';
+      if (task.status !== 'completada') {
+        if (diffDays < 0) {
+          dueClass = 'due-overdue';
+        } else if (diffDays <= 2) {
+          dueClass = 'due-soon';
+        }
+      }
+
+      dueDateHtml = `<span class="due-date-chip ${dueClass}">📅 ${dueDate.toLocaleDateString()}</span>`;
+    }
+
+    let assigneeHtml = '';
+    if (task.assignee) {
+      assigneeHtml = `
+        <span class="task-assignee">
+          <span class="assignee-avatar" style="background-color: ${getAvatarColor(task.assignee)}">${getInitials(task.assignee)}</span>
+          ${escapeHtml(task.assignee)}
+        </span>
+      `;
+    }
+
+    let footerHtml = '';
+    if (assigneeHtml || dueDateHtml) {
+      footerHtml = `<div class="task-footer">${assigneeHtml}${dueDateHtml}</div>`;
     }
 
     let subtasksHtml;
@@ -238,6 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     div.innerHTML = `
+      ${priorityBadgeHtml}
       <div class="task-header">
         <h4>${escapeHtml(task.title)}</h4>
         <div class="task-actions">
@@ -247,8 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
       <p>${escapeHtml(task.description)}</p>
       ${tagsHtml}
-      ${task.assignee ? `<p class="task-assignee">👤 ${escapeHtml(task.assignee)}</p>` : ''}
-      ${task.dueDate ? `<p class="task-due-date">📅 ${new Date(task.dueDate).toLocaleDateString()}</p>` : ''}
+      ${footerHtml}
       ${subtasksHtml}
     `;
 

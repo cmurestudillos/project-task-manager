@@ -43,8 +43,8 @@ class Database {
   addProject(project) {
     const projects = this.getProjects();
 
-    // Generar ID único basado en timestamp
-    project.id = Date.now().toString();
+    // Generar ID único
+    project.id = crypto.randomUUID();
     project.tasks = [];
     project.createdAt = new Date().toISOString();
 
@@ -108,7 +108,7 @@ class Database {
 
     if (projectIndex !== -1) {
       // Generar ID único y añadir metadatos
-      task.id = Date.now().toString();
+      task.id = crypto.randomUUID();
       task.status = task.status || 'pendiente';
       task.createdAt = new Date().toISOString();
 
@@ -330,7 +330,7 @@ class Database {
         }
 
         // Generar ID único y añadir metadatos
-        subtask.id = Date.now().toString();
+        subtask.id = crypto.randomUUID();
         subtask.completed = subtask.completed || false;
         subtask.createdAt = new Date().toISOString();
 
