@@ -11,6 +11,6 @@
 *.min.css
 
 # Otros
-package-lock.json
-yarn.lock
+pnpm-lock.yaml
+release
 *.md

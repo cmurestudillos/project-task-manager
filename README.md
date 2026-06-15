@@ -20,8 +20,8 @@ Project Task Manager es una aplicación de escritorio para gestión de proyectos
 ## 🚀 Instalación
 
 ### Prerrequisitos
-- [Node.js](https://nodejs.org/)
-- npm (viene con Node.js)
+- [Node.js](https://nodejs.org/) (v20 o superior)
+- [pnpm](https://pnpm.io/) (`corepack enable` o `npm install -g pnpm`)
 
 ### Instalación desde código fuente
 
@@ -31,10 +31,10 @@ git clone https://github.com/cmurestudillos/project-task-manager.git
 cd project-task-manager
 
 # Instalar dependencias
-npm install
+pnpm install
 
 # Iniciar aplicación
-npm start
+pnpm start
 ```
 
 ### Descargar versión compilada

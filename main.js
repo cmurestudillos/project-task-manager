@@ -1,6 +1,6 @@
-const { app, BrowserWindow, ipcMain, Notification } = require('electron');
-const path = require('path');
-const db = require('./db/database'); // Importamos nuestra capa de base de datos
+import { app, BrowserWindow, ipcMain, Notification } from 'electron';
+import path from 'path';
+import db from './db/database.js';
 
 let mainWindow;
 
@@ -11,7 +11,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(import.meta.dirname, 'preload.cjs'),
     },
   });
 
@@ -25,12 +25,16 @@ app.whenReady().then(() => {
   createWindow();
 
   app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
   });
 });
 
 app.on('window-all-closed', function () {
-  if (process.platform !== 'darwin') app.quit();
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
 });
 
 // Comunicación IPC para gestionar proyectos y tareas usando la capa de base de datos
