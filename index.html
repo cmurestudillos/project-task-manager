@@ -18,6 +18,7 @@
         <button id="newProjectBtn" class="btn primary">Nuevo Proyecto</button>
         <button id="exportBtn" class="btn">Exportar</button>
         <button id="importBtn" class="btn">Importar</button>
+        <button id="themeToggleBtn" class="btn icon-btn" type="button" title="Cambiar tema" aria-label="Cambiar tema">🌙</button>
       </div>
     </header>
 
@@ -62,15 +63,15 @@
 
           <div id="tasksList" class="tasks-list">
             <div class="tasks-column">
-              <h3>Pendientes</h3>
+              <h3>Pendientes <span id="pendingCount" class="column-count">0</span></h3>
               <div id="pendingTasks" class="tasks-container" data-status="pendiente"></div>
             </div>
             <div class="tasks-column">
-              <h3>En Progreso</h3>
+              <h3>En Progreso <span id="inProgressCount" class="column-count">0</span></h3>
               <div id="inProgressTasks" class="tasks-container" data-status="en-progreso"></div>
             </div>
             <div class="tasks-column">
-              <h3>Completadas</h3>
+              <h3>Completadas <span id="completedCount" class="column-count">0</span></h3>
               <div id="completedTasks" class="tasks-container" data-status="completada"></div>
             </div>
           </div>
