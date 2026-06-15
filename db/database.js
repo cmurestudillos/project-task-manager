@@ -1,4 +1,4 @@
-const Store = require('electron-store');
+import Store from 'electron-store';
 
 // Creamos una instancia de Store para manejar el almacenamiento persistente
 const store = new Store();
@@ -247,7 +247,9 @@ class Database {
    * @returns {Array} Tareas encontradas con información del proyecto
    */
   searchTasks(searchTerm) {
-    if (!searchTerm) return [];
+    if (!searchTerm) {
+      return [];
+    }
 
     const projects = this.getProjects();
     const searchResults = [];
@@ -410,4 +412,4 @@ class Database {
 }
 
 // Exportamos una instancia única de Database
-module.exports = new Database();
+export default new Database();

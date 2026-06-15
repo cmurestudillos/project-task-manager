@@ -43,11 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let isEditingTask = false;
   let currentTaskId = null;
 
-  // Variables adicionales a agregar al principio del archivo, después de las otras declaraciones de constantes
   const subtaskModal = document.getElementById('subtaskModal');
   const subtaskForm = document.getElementById('subtaskForm');
 
-  // Variables de estado adicionales a agregar después de las existentes
   let currentSubtaskId = null;
   let isEditingSubtask = false;
   let parentTaskId = null;
@@ -67,7 +65,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   searchBtn.addEventListener('click', performSearch);
   searchInput.addEventListener('keypress', e => {
-    if (e.key === 'Enter') performSearch();
+    if (e.key === 'Enter') {
+      performSearch();
+    }
   });
   closeSearchBtn.addEventListener('click', () => {
     searchResults.style.display = 'none';
@@ -96,9 +96,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (event.target === importModal) {
       importModal.style.display = 'none';
     }
+    if (event.target === subtaskModal) {
+      subtaskModal.style.display = 'none';
+    }
   });
 
   // Funciones
+  function escapeHtml(value) {
+    const div = document.createElement('div');
+    div.textContent = value ?? '';
+    return div.innerHTML;
+  }
+
   async function loadProjects() {
     try {
       const projects = await window.api.getProjects();
@@ -186,12 +195,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (task.tags && task.tags.length > 0) {
       tagsHtml = `
         <div class="task-tags">
-          ${task.tags.map(tag => `<span class="task-tag">${tag}</span>`).join('')}
+          ${task.tags.map(tag => `<span class="task-tag">${escapeHtml(tag)}</span>`).join('')}
         </div>
       `;
     }
 
-    let subtasksHtml = '';
+    let subtasksHtml;
     if (task.subtasks && task.subtasks.length > 0) {
       const completedCount = task.subtasks.filter(s => s.completed).length;
       const totalCount = task.subtasks.length;
@@ -208,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 subtask => `
               <li class="subtask-item ${subtask.completed ? 'completed' : ''}">
                 <input type="checkbox" class="subtask-checkbox" data-subtask-id="${subtask.id}" ${subtask.completed ? 'checked' : ''}>
-                <span class="subtask-title">${subtask.title}</span>
+                <span class="subtask-title">${escapeHtml(subtask.title)}</span>
                 <div class="subtask-actions">
                   <button class="edit-subtask-btn" data-subtask-id="${subtask.id}">✏️</button>
                   <button class="delete-subtask-btn" data-subtask-id="${subtask.id}">🗑️</button>
@@ -230,15 +239,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     div.innerHTML = `
       <div class="task-header">
-        <h4>${task.title}</h4>
+        <h4>${escapeHtml(task.title)}</h4>
         <div class="task-actions">
           <button class="edit-task-btn">✏️</button>
           <button class="delete-task-btn">🗑️</button>
         </div>
       </div>
-      <p>${task.description || ''}</p>
+      <p>${escapeHtml(task.description)}</p>
       ${tagsHtml}
-      ${task.assignee ? `<p class="task-assignee">👤 ${task.assignee}</p>` : ''}
+      ${task.assignee ? `<p class="task-assignee">👤 ${escapeHtml(task.assignee)}</p>` : ''}
       ${task.dueDate ? `<p class="task-due-date">📅 ${new Date(task.dueDate).toLocaleDateString()}</p>` : ''}
       ${subtasksHtml}
     `;
@@ -352,8 +361,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const daysText = task.daysLeft === 0 ? 'Hoy' : task.daysLeft === 1 ? 'Mañana' : `En ${task.daysLeft} días`;
 
         div.innerHTML = `
-          <h4>${task.taskTitle}</h4>
-          <p class="task-project">Proyecto: ${task.projectName}</p>
+          <h4>${escapeHtml(task.taskTitle)}</h4>
+          <p class="task-project">Proyecto: ${escapeHtml(task.projectName)}</p>
           <p class="task-due-date">Vence: ${daysText}</p>
         `;
 
@@ -371,7 +380,9 @@ document.addEventListener('DOMContentLoaded', () => {
   async function performSearch() {
     const searchTerm = searchInput.value.trim();
 
-    if (!searchTerm) return;
+    if (!searchTerm) {
+      return;
+    }
 
     try {
       const results = await window.api.searchTasks(searchTerm);
@@ -386,9 +397,9 @@ document.addEventListener('DOMContentLoaded', () => {
           div.className = `search-result-item priority-${result.task.priority || 'media'}`;
 
           div.innerHTML = `
-            <h3>${result.task.title}</h3>
-            <p>${result.task.description || ''}</p>
-            <p class="task-project">Proyecto: ${result.projectName}</p>
+            <h3>${escapeHtml(result.task.title)}</h3>
+            <p>${escapeHtml(result.task.description)}</p>
+            <p class="task-project">Proyecto: ${escapeHtml(result.projectName)}</p>
             <p class="task-status">Estado: ${formatStatus(result.task.status)}</p>
           `;
 
@@ -431,7 +442,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function openEditProjectModal() {
-    if (!currentProjectId) return;
+    if (!currentProjectId) {
+      return;
+    }
 
     try {
       const project = await window.api.getProject(currentProjectId);
@@ -449,7 +462,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function openNewTaskModal() {
-    if (!currentProjectId) return;
+    if (!currentProjectId) {
+      return;
+    }
 
     document.getElementById('taskModalTitle').textContent = 'Nueva Tarea';
     taskForm.reset();
@@ -506,7 +521,9 @@ document.addEventListener('DOMContentLoaded', () => {
   async function saveTask(e) {
     e.preventDefault();
 
-    if (!currentProjectId) return;
+    if (!currentProjectId) {
+      return;
+    }
 
     const taskTags = document
       .getElementById('taskTags')
@@ -540,7 +557,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function confirmDeleteProject() {
-    if (!currentProjectId) return;
+    if (!currentProjectId) {
+      return;
+    }
 
     if (confirm('¿Estás seguro de que deseas eliminar este proyecto y todas sus tareas?')) {
       try {
@@ -562,7 +581,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function confirmDeleteTask(taskId) {
-    if (!currentProjectId || !taskId) return;
+    if (!currentProjectId || !taskId) {
+      return;
+    }
 
     if (confirm('¿Estás seguro de que deseas eliminar esta tarea?')) {
       try {
@@ -604,7 +625,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let importedProjects;
       try {
         importedProjects = JSON.parse(importDataText);
-      } catch (e) {
+      } catch {
         alert('Error: Los datos JSON no son válidos. Por favor, verifica el formato.');
         return;
       }
@@ -671,7 +692,9 @@ document.addEventListener('DOMContentLoaded', () => {
   async function saveSubtask(e) {
     e.preventDefault();
 
-    if (!currentProjectId || !parentTaskId) return;
+    if (!currentProjectId || !parentTaskId) {
+      return;
+    }
 
     const subtaskData = {
       title: document.getElementById('subtaskTitle').value,
@@ -693,7 +716,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function updateSubtaskStatus(taskId, subtaskId, completed) {
-    if (!currentProjectId) return;
+    if (!currentProjectId) {
+      return;
+    }
 
     try {
       await window.api.updateSubtask(currentProjectId, taskId, subtaskId, { completed });
@@ -704,7 +729,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function confirmDeleteSubtask(taskId, subtaskId) {
-    if (!currentProjectId) return;
+    if (!currentProjectId) {
+      return;
+    }
 
     if (confirm('¿Estás seguro de que deseas eliminar esta subtarea?')) {
       try {
@@ -716,20 +743,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Event listeners adicionales a agregar al final de la sección de event listeners
   subtaskForm.addEventListener('submit', saveSubtask);
-
-  // Cierre de modal para subtareas
-  document.querySelectorAll('.close').forEach(closeBtn => {
-    closeBtn.addEventListener('click', function () {
-      this.closest('.modal').style.display = 'none';
-    });
-  });
-
-  // Añadir esto al event listener de window.addEventListener('click'...)
-  if (event.target === subtaskModal) {
-    subtaskModal.style.display = 'none';
-  }
 
   // Iniciar verificación periódica de tareas próximas a vencer (cada hora)
   setInterval(checkUpcomingTasks, 60 * 60 * 1000);
